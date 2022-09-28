@@ -489,7 +489,6 @@ while True:
 							print("discipline D",d_change)
 							break
 					print(t_change1,"  ",s_change2,"  <------->  ",s_change1,"  ",t_change2)
-					#TODO TEST
 					discipline[d][getPosInList(time,t_change2)][getPosInList(discipline[d][getPosInList(time,t_change2)],s_change2)]=s_change2
 					discipline[d][getPosInList(time,t_change1)][getPosInList(discipline[d][getPosInList(time,t_change1)],s_change1)]=s_change1
 					#print(discipline)
