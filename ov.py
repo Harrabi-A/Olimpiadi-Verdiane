@@ -5,6 +5,10 @@ from random import randint
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import csv
+
+import json
 
 
 #check if two list have the same element at the same order
@@ -129,6 +133,11 @@ if nt_GS < Ng :
 w = int(input("What is the maximum number of overlaps?\n"))
 
 nd = int(input("how many disciplines?\n"))
+
+discipline_name = []
+for i in range(nd):
+	tmp_discipline_name="D"+str(i)
+	discipline_name.append(tmp_discipline_name)
 
 discipline = []
 timeline = []
@@ -527,7 +536,7 @@ while True:
 			
 	input("press enter to continue")
 
-
+'''
 # Initialize void beta matrix
 beta = pd.DataFrame(columns=time, index=teams)
 for s in range(ns):
@@ -570,4 +579,98 @@ for s in range(ns):
 			selected_disc_prev_st = tmp_distance_list[tmp_pos_min_distance]
 			beta.at[teams[s],time[t]] = distance[getPosInList(regions,disciplineRegions[selected_disc_st])][getPosInList(regions,disciplineRegions[selected_disc_prev_st])]			
 
-print("NEW beta ", beta.sum().sum())
+print("NEW beta ", beta.sum().sum())'''
+
+'''
+# Open the CSV file for reading
+with open('DisciplineName.csv', 'r') as file:
+  # Create a CSV reader object
+  reader = csv.reader(file)
+  
+  # Read the first row from the file (the data row)
+  data_row = next(reader)
+  
+  # Convert the data row to a list
+  NomiDiscipline = list(data_row)
+
+print(NomiDiscipline)
+
+if (len(NomiDiscipline) != nd):
+	print("number of discipline in NomiDiscipline is different than the input")
+	print(len(NomiDiscipline))
+	input("INCONSISTENCY ERROR")
+
+
+# Export to JSON
+disciplien_toJSON_list = []
+discipline_dict = {
+	
+}
+
+timeline_toJSON_list = []
+for x in range(nt_GS):
+	timeline_dict = {
+		"slot":time[x],
+	}
+	for y in range(nd):
+		timeline_dict[NomiDiscipline[y]] = discipline[y][x]
+		#timeline_dict[discipline_name[y]]=discipline[y][x]
+	timeline_toJSON_list.append(timeline_dict)
+
+with open("timeline_2.json", "w") as outfile:
+	json.dump(timeline_toJSON_list, outfile)'''
+
+
+
+
+# compute the coupling between teams
+q_sum = 0
+q_min = 9999
+q_max = 0
+q_matrix = []
+for i in range(ns):
+	row = []
+	for j in range(ns):
+		p = 0
+		if i !=j :
+			for t in range(nt_GS):
+				for d in range(nd):					
+					if (teams[i] in discipline[d][t]) and (teams[j] in discipline[d][t]):
+						p += 1
+			#eventually update min and max
+			if p > q_max:
+				q_max = p
+			if p < q_min:
+				q_min = p
+			q_sum += p
+		row.append(p)
+	q_matrix.append(row)
+
+q = np.matrix(q_matrix)
+print(q)
+
+q_avg = q_sum / (ns*ns-ns)
+print("The average coupling between teams is q=",q_avg)
+plt.matshow(q)
+plt.show()
+
+#compute q_mae
+q_tot_error = 0
+for i in range(ns):
+	for j in range(ns):
+		if i == j:
+			continue
+		q_tot_error = q_tot_error + abs(q.item((i,j)) - q_avg)
+
+q_mae = q_tot_error / (ns*ns-ns)
+print("low value of MAE corrsipond to a better distribution equality in teams coupling")
+print("mean absolute error: ",q_mae)
+print("\n\n***Solution***")
+print("OF: ",OF_alpha)
+print("alpha: ",OF_alpha)
+print("beta:", "NOT IMPLEMENTED YET")
+print("\n***quality of solution***")
+print("coupling AVG: ",q_avg)
+print("coupling MAE: ",q_mae)
+print("coumpling MAX: ",q_max)
+print("coupling MIN: ",q_min)
